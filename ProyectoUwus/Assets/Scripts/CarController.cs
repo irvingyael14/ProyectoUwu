@@ -4,22 +4,68 @@ using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
+    public float power = 3;
+    public float maxspeed = 5;
+    public float turnpower = 2;
+    public float friction = 3;
+    public Vector2 curspeed;
+    Rigidbody2D rigidbody2D;
 
-    void Update()
+    // Use this for initialization
+    void Start()
     {
-        // Leer los valores de los ejes de entrada
-        float move = Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
-        float strafe = Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
+        rigidbody2D = GetComponent<Rigidbody2D>();
+    }
 
-        // Si hay movimiento horizontal, desactivar el movimiento vertical
-        if (move != 0)
+
+    void FixedUpdate()
+    {
+        curspeed = new Vector2(rigidbody2D.velocity.x, rigidbody2D.velocity.y);
+
+        if (curspeed.magnitude > maxspeed)
         {
-            transform.Translate(move, 0, 0); // Mover solo en el eje X (horizontal)
+            curspeed = curspeed.normalized;
+            curspeed *= maxspeed;
         }
-        else if (strafe != 0)
+
+        if (Input.GetKey(KeyCode.W))
         {
-            transform.Translate(0, strafe, 0); // Mover solo en el eje Y (vertical)
+            rigidbody2D.AddForce(transform.right * power);
+            rigidbody2D.drag = friction;
+        }
+        if (Input.GetKey(KeyCode.S))
+        {
+            rigidbody2D.AddForce(-(transform.right) * (power / 2));
+            rigidbody2D.drag = friction;
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.Rotate(Vector3.forward * turnpower);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.Rotate(Vector3.forward * -turnpower);
+        }
+
+        noGas();
+
+    }
+
+    void noGas()
+    {
+        bool gas;
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S))
+        {
+            gas = true;
+        }
+        else
+        {
+            gas = false;
+        }
+
+        if (!gas)
+        {
+            rigidbody2D.drag = friction * 2;
         }
     }
 }
